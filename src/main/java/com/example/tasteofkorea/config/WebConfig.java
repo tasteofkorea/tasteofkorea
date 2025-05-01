@@ -10,7 +10,7 @@ public class WebConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowedOrigins("http://localhost:5173",
-                        "https://taste-of-korea-9uvr7edhg-junghyun13s-projects.vercel.app/")  // React 앱의 주소
+                        "https://taste-of-korea-fe.vercel.app")  // React 앱의 주소
                 .allowedMethods("GET", "POST", "PUT", "DELETE");
     }
 }
