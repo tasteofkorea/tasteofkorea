@@ -47,5 +47,5 @@ jobs:
 
       - name: Build and push Docker image with cache
         run: |
-          docker build -t food/kfood:latest .
+          docker build -t kfood/kfood:latest .
           docker push kfood/kfood:latest
