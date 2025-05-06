@@ -23,21 +23,31 @@ public class UserService {
 
     // 회원가입
     public void signup(SignupRequestDto requestDto) {
+        // 중복 username 검사
+        if (userRepository.findByUsername(requestDto.getUsername()).isPresent()) {
+            throw new IllegalArgumentException("이미 존재하는 사용자명입니다.");
+        }
+
+        // 중복 email 검사
+        if (userRepository.findByEmail(requestDto.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+        }
+
         String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
 
-
-        // User 객체를 생성하고 저장
         User user = new User(
                 requestDto.getUsername(),
-                encodedPassword,  // 여기에 인코딩된 비밀번호 저장
+                encodedPassword,
                 requestDto.getName(),
                 requestDto.getEmail(),
                 requestDto.getIntroduce(),
-                requestDto.getRole(),  // 이미 Enum 타입이므로 변환 불필요
-                null // 초기에는 토큰이 없으므로 null
+                requestDto.getRole(),
+                null
         );
+
         userRepository.save(user);
     }
+
 
     // 회원 정보 조회
     public Optional<User> getUserInfo(UserDetailsImpl userDetails) {
@@ -61,8 +71,19 @@ public class UserService {
         userRepository.delete(user);
     }
 
-    // 로그아웃
-    public void logout(UserDetailsImpl userDetails) {
-        // 로그아웃 처리 로직 (예: 클라이언트가 JWT 삭제하게 하면 됨)
+    // 로그아웃 처리
+    public void logout(JoinRequestDto requestDto, UserDetailsImpl userDetails) {
+        // 클라이언트 측에서 토큰을 삭제하도록 안내
+        // JWT의 경우, 서버에서 별다른 처리가 필요 없으므로,
+        // 이 예시에서는 실제로는 토큰을 클라이언트에서 삭제해야 합니다.
+
+        // 예를 들어, requestDto에서 필요한 정보로 로그아웃 처리 여부 확인 등
+        if (userDetails != null) {
+            // JWT 토큰을 클라이언트에서 삭제하도록 요청하는 로직
+            // JWT 기반 인증에서는 실제로 서버에서 해당 토큰을 블랙리스트 처리하거나 만료시킬 수 없기 때문에
+            // 클라이언트가 로컬 저장소에서 토큰을 삭제하도록 유도하는 방법
+            System.out.println(userDetails.getUsername() + " 로그아웃 처리");
+            // 필요시 requestDto를 활용하여 추가적인 로그아웃 처리를 할 수 있음.
+        }
     }
 }

@@ -50,18 +50,29 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     }
 
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) {
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException {
         String username = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
         UserRoleEnum role = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getRole();
 
+        // JWT 토큰 생성
         String token = jwtUtil.createToken(username, role);
+
+        // 응답 헤더에 토큰 추가
         response.addHeader(JwtUtil.AUTHORIZATION_HEADER, token);
+
+        // JSON 응답 형식으로 토큰 추가
+        response.setContentType("application/json");
+        response.getWriter().write("{\"accessToken\":\"" + token + "\"}");
+        response.getWriter().flush();
+
+        // 사용자 정보 업데이트
         Optional<User> user = Optional.ofNullable(userRepository.findByUsername(username).orElseThrow(() ->
                 new IllegalArgumentException("해당 사용자는 존재하지 않습니다")));
 
         user.get().setToken(token);
         userRepository.save(user.get());
     }
+
 
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {

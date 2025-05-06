@@ -81,7 +81,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .logout(logout -> logout
-                        .logoutRequestMatcher(new AntPathRequestMatcher("/api/logout"))
+                        .logoutRequestMatcher(new AntPathRequestMatcher("/api/user/logout"))
                         .logoutSuccessUrl("/")
                 )
                 .addFilterBefore(jwtAuthorizationFilter(), JwtAuthenticationFilter.class)
