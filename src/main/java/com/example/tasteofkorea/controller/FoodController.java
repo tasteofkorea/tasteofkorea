@@ -16,7 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.Map;
 @Tag(name = "음식 API", description = "한식 이미지 분석 및 정보 제공 API")
-@CrossOrigin(origins = {"http://localhost:5173","https://taste-of-korea-fe.vercel.app/"}) // React 앱의 주소
+@CrossOrigin(origins = {"http://localhost:5173","https://taste-of-korea-fe.vercel.app"}) // React 앱의 주소
 
 @RestController
 @RequiredArgsConstructor  // Lombok을 사용하여 생성자 자동 생성
