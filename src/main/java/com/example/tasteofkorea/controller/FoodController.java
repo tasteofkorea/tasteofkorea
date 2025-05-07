@@ -46,7 +46,7 @@ public class FoodController {
     // 특정 음식 조회
     @Operation(summary = "음식 정보 조회", description = "음식 ID로 한식 정보를 가져옴")
     @GetMapping("/{id}")
-    public ResponseEntity<RecipeDTO> getRecipeById(@PathVariable("id") int id) {
+    public ResponseEntity<RecipeDTO> getRecipeById(@PathVariable("id") Long id) {
         RecipeDTO recipe = recipeService.getRecipeById(id);
         if (recipe != null) {
             return ResponseEntity.ok(recipe);

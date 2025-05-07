@@ -20,7 +20,7 @@ public class RecipeService {
     private FoodLogRepository foodLogRepository;
 
     // 특정 음식 조회 + 로그 기록
-    public RecipeDTO getRecipeById(int id) {
+    public RecipeDTO getRecipeById(Long id) {
         Optional<RecipeEntity> recipeEntityOpt = recipeRepository.findById(id);
         if (recipeEntityOpt.isPresent()) {
             RecipeEntity recipeEntity = recipeEntityOpt.get();

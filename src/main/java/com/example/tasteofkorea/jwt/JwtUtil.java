@@ -2,10 +2,13 @@ package com.example.tasteofkorea.jwt;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import java.util.Base64;
 import java.util.Date;
 
 @Component
@@ -13,7 +16,18 @@ public class JwtUtil {
     public static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
     private static final long TOKEN_VALID_TIME = 60 * 60 * 1000L; // 1시간
-    private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+
+
+    @Value("${jwt.secret.key}")
+    private String secretKey;
+
+    private Key key;
+
+    @PostConstruct
+    public void init() {
+        byte[] keyBytes = Base64.getDecoder().decode(secretKey);  // base64 인코딩된 키일 경우
+        key = Keys.hmacShaKeyFor(keyBytes);
+    }
 
     public String createToken(String username, Enum<?> role) {
         return BEARER_PREFIX + Jwts.builder()

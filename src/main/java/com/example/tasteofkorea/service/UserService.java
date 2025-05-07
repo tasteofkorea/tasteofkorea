@@ -61,7 +61,7 @@ public class UserService {
         user.setIntroduce(requestDto.getIntroduce());
         userRepository.save(user);
 
-        return new UserInfoResponseDto(user.getUsername(), user.getEmail(), user.getIntroduce());
+        return new UserInfoResponseDto(user.getId(), user.getUsername(), user.getEmail(), user.getIntroduce());
     }
 
     // 회원 탈퇴
@@ -70,6 +70,8 @@ public class UserService {
         User user = userRepository.findById(userDetails.getUser().getId()).orElseThrow();
         userRepository.delete(user);
     }
+
+
 
     // 로그아웃 처리
     public void logout(JoinRequestDto requestDto, UserDetailsImpl userDetails) {

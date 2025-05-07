@@ -31,6 +31,7 @@ public class User extends TimeStamped {
     private LocalDateTime lastLogin;
 
 
+
     public User(String username, String password, String name, String email, String introduce, UserRoleEnum role, String token) {
         this.username = username;
         this.password = password;

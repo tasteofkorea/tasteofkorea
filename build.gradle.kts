@@ -32,6 +32,7 @@ dependencies {
 
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.security:spring-security-config")
+	implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
 
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")

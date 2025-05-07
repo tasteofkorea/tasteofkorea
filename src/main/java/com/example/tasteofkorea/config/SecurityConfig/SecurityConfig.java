@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -31,6 +32,7 @@ public class SecurityConfig {
     private final UserDetailsServiceImpl userDetailsService;
     private final AuthenticationConfiguration authenticationConfiguration;
     private final UserRepository userRepository;
+    private final RedisTemplate<String, String> redisTemplate;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -44,15 +46,17 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception {
-        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtUtil, userRepository);
+        // RedisTemplate을 JwtAuthenticationFilter에 주입
+        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtUtil, userRepository, redisTemplate);
         filter.setAuthenticationManager(authenticationManager(authenticationConfiguration));
         return filter;
     }
 
     @Bean
     public JwtAuthorizationFilter jwtAuthorizationFilter() {
-        return new JwtAuthorizationFilter(jwtUtil, userDetailsService);
+        return new JwtAuthorizationFilter(jwtUtil, userDetailsService, redisTemplate);
     }
+
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
@@ -76,16 +80,20 @@ public class SecurityConfig {
                                 "/api/food/**",
                                 "/api/newsfeeds/**",
                                 "/swagger-ui/**",
-                                "/v3/api-docs/**"
+                                "/v3/api-docs/**",
+
+                                // ✅ 여기에 추가
+                                "/restaurants",                      // GET 전체 조회
+                                "/restaurants/by-recipe"             // GET by-recipe 조회
                         ).permitAll()
+                        .requestMatchers("/api/user/logout").authenticated() // 또는 아예 이 줄을 제거해도 됨
+
                         .anyRequest().authenticated()
                 )
-                .logout(logout -> logout
-                        .logoutRequestMatcher(new AntPathRequestMatcher("/api/user/logout"))
-                        .logoutSuccessUrl("/")
-                )
-                .addFilterBefore(jwtAuthorizationFilter(), JwtAuthenticationFilter.class)
-                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+
+                // ✅ AuthorizationFilter는 AuthenticationFilter보다 먼저 실행되어야 한다!
+                .addFilterBefore(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthenticationFilter(), JwtAuthorizationFilter.class)
                 .authenticationProvider(authenticationProvider());
 
         return http.build();
