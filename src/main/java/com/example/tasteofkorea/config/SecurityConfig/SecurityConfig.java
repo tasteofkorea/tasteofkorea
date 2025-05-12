@@ -1,10 +1,10 @@
 package com.example.tasteofkorea.config.SecurityConfig;
 
 import com.example.tasteofkorea.jwt.JwtAuthenticationFilter;
-import com.example.tasteofkorea.jwt.JwtAuthorizationFilter;
 import com.example.tasteofkorea.jwt.JwtUtil;
 import com.example.tasteofkorea.repository.UserRepository;
 import com.example.tasteofkorea.security.UserDetailsServiceImpl;
+import com.example.tasteofkorea.service.CookieService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -20,7 +20,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 
 @Configuration
@@ -32,7 +31,7 @@ public class SecurityConfig {
     private final UserDetailsServiceImpl userDetailsService;
     private final AuthenticationConfiguration authenticationConfiguration;
     private final UserRepository userRepository;
-    private final RedisTemplate<String, String> redisTemplate;
+    private final CookieService cookieService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -46,15 +45,9 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception {
-        // RedisTemplate을 JwtAuthenticationFilter에 주입
-        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtUtil, userRepository, redisTemplate);
+        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtUtil, userRepository, cookieService);
         filter.setAuthenticationManager(authenticationManager(authenticationConfiguration));
         return filter;
-    }
-
-    @Bean
-    public JwtAuthorizationFilter jwtAuthorizationFilter() {
-        return new JwtAuthorizationFilter(jwtUtil, userDetailsService, redisTemplate);
     }
 
 
@@ -92,8 +85,7 @@ public class SecurityConfig {
                 )
 
                 // ✅ AuthorizationFilter는 AuthenticationFilter보다 먼저 실행되어야 한다!
-                .addFilterBefore(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtAuthenticationFilter(), JwtAuthorizationFilter.class)
+                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authenticationProvider(authenticationProvider());
 
         return http.build();

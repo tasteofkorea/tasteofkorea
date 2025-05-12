@@ -9,10 +9,12 @@ import com.example.tasteofkorea.entity.UserRoleEnum;
 import com.example.tasteofkorea.repository.UserRepository;
 import com.example.tasteofkorea.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -48,26 +50,22 @@ public class UserService {
         userRepository.save(user);
     }
 
-
-    // 회원 정보 조회
-    public Optional<User> getUserInfo(UserDetailsImpl userDetails) {
-        return userRepository.findById(userDetails.getUser().getId());
-    }
-
     // 회원 정보 수정
-    public UserInfoResponseDto updateUserInfo(UpdateInfoRequestDto requestDto, UserDetailsImpl userDetails) {
+    @Transactional
+    public UserInfoResponseDto updateUserInfo(UpdateInfoRequestDto requestDto, String username) {
         // 정보 수정 로직 구현
-        User user = userRepository.findById(userDetails.getUser().getId()).orElseThrow();
-        user.setIntroduce(requestDto.getIntroduce());
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("유저 이름이 없습니다."));
+        user.changeIntroduce(requestDto.getIntroduce());
         userRepository.save(user);
 
         return new UserInfoResponseDto(user.getId(), user.getUsername(), user.getEmail(), user.getIntroduce());
     }
 
     // 회원 탈퇴
-    public void withdrawal(JoinRequestDto requestDto, UserDetailsImpl userDetails) {
+    @Transactional
+    public void withdrawal(String username) {
         // 탈퇴 로직 구현
-        User user = userRepository.findById(userDetails.getUser().getId()).orElseThrow();
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("유저 이름이 없습니다."));
         userRepository.delete(user);
     }
 
@@ -87,5 +85,9 @@ public class UserService {
             System.out.println(userDetails.getUsername() + " 로그아웃 처리");
             // 필요시 requestDto를 활용하여 추가적인 로그아웃 처리를 할 수 있음.
         }
+    }
+
+    public User getUserInfoByUsername(String username) {
+        return userRepository.findByUsername(username).orElseThrow(() -> new IllegalArgumentException("사용자 정보를 찾을 수 없습니다."));
     }
 }

@@ -2,7 +2,6 @@ package com.example.tasteofkorea.entity;
 
 
 public enum UserRoleEnum {
-    USER,      // 일반 사용자
     OWNER,     // 식당 등록자
     ADMIN;     // 관리자
 

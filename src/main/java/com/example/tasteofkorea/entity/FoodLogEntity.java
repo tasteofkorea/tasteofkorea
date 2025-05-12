@@ -1,14 +1,19 @@
 package com.example.tasteofkorea.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "food_log")
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @Getter
-@Setter
 public class FoodLogEntity {
 
     @Id

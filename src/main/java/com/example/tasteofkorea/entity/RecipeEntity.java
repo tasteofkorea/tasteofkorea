@@ -1,5 +1,6 @@
 package com.example.tasteofkorea.entity;
 
+import com.example.tasteofkorea.dto.RecipeDTO;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -42,4 +43,24 @@ public class RecipeEntity {
 
     @Column(name = "image_source", length = 255)
     private String imageSource;
+
+    @Column(name = "views")
+    private int views;
+
+    public RecipeDTO toDto() {
+        return RecipeDTO.builder()
+            .id(this.getId())
+            .koreanName(this.getKoreanName())
+            .englishName(this.getEnglishName())
+            .pronunciation(this.getPronunciation())
+            .information(this.getInformation())
+            .recipeLink(this.getRecipeLink())
+            .eatLink(this.getEatLink())
+            .recipeSource(this.getRecipeSource())
+            .eatingSource(this.getEatingSource())
+            .imageLink(this.getImageLink())
+            .imageSource(this.getImageSource())
+            .build();
+    }
+
 }

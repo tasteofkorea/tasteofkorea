@@ -2,6 +2,8 @@ package com.example.tasteofkorea.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,10 +12,11 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Setter
+@AllArgsConstructor
+@Builder
 @NoArgsConstructor
 @Table(name = "users")
-public class User extends TimeStamped {
+public class User   {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,5 +44,10 @@ public class User extends TimeStamped {
         this.role = role;
         this.token = token;
         this.lastLogin = LocalDateTime.now();
+    }
+
+    public User changeIntroduce(String newIntroduce) {
+        this.introduce = newIntroduce;
+        return this;
     }
 }

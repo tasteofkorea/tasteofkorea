@@ -1,11 +1,8 @@
 package com.example.tasteofkorea.repository;
 
 import com.example.tasteofkorea.entity.FilterEntity;
-import com.example.tasteofkorea.entity.FilterNumEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 @Repository
 public interface FilterRepository extends JpaRepository<FilterEntity, Long> {

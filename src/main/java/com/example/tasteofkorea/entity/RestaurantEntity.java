@@ -21,10 +21,6 @@ public class RestaurantEntity {
     @JoinColumn(name = "users_id")
     private User owner;
 
-    @ManyToOne
-    @JoinColumn(name = "test_file_entity_id") // restaurant 테이블에 image_id 컬럼 생김
-    private TestFileEntity image;
-
     // 메뉴 관련 필드들
     @ManyToOne
     @JoinColumn(name = "food_id")

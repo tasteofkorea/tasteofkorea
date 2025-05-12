@@ -1,61 +1,93 @@
 package com.example.tasteofkorea.jwt;
 
+import com.example.tasteofkorea.entity.UserRoleEnum;
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.Keys;
-import jakarta.annotation.PostConstruct;
-import jakarta.servlet.http.HttpServletRequest;
+import java.security.Key;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
-import java.util.Base64;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Component
 public class JwtUtil {
-    public static final String AUTHORIZATION_HEADER = "Authorization";
-    private static final String BEARER_PREFIX = "Bearer ";
-    private static final long TOKEN_VALID_TIME = 60 * 60 * 1000L; // 1시간
 
+    private final Key secretKey;
 
-    @Value("${jwt.secret.key}")
-    private String secretKey;
-
-    private Key key;
-
-    @PostConstruct
-    public void init() {
-        byte[] keyBytes = Base64.getDecoder().decode(secretKey);  // base64 인코딩된 키일 경우
-        key = Keys.hmacShaKeyFor(keyBytes);
+    public JwtUtil(@Value("${spring.jwt.secret}") String secret) {
+        this.secretKey = new SecretKeySpec(
+            secret.getBytes(StandardCharsets.UTF_8),
+            SignatureAlgorithm.HS256.getJcaName()
+        );
     }
 
-    public String createToken(String username, Enum<?> role) {
-        return BEARER_PREFIX + Jwts.builder()
-                .setSubject(username)
-                .claim("auth", role.name())
-                .setExpiration(new Date(System.currentTimeMillis() + TOKEN_VALID_TIME))
-                .signWith(key)
-                .compact();
-    }
-
-    public String getJwtFromHeader(HttpServletRequest request) {
-        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
-        if (bearerToken != null && bearerToken.startsWith(BEARER_PREFIX)) {
-            return bearerToken.substring(BEARER_PREFIX.length());
+    public String getUsernameFromBearer(String bearerToken) {
+        if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
+            throw new IllegalArgumentException("잘못된 Authorization 헤더 형식입니다.");
         }
-        return null;
+
+        String token = bearerToken.substring(7);
+
+        if (!validateToken(token)) {
+            throw new IllegalArgumentException("유효하지 않은 JWT 토큰입니다.");
+        }
+
+        return getUsername(token);
+    }
+    public String createJwt(String nickname, String role, Long expiredMs) {
+        return Jwts.builder()
+            .claim("nickname", nickname)
+            .claim("role", role)
+            .setExpiration(new Date(System.currentTimeMillis() + expiredMs))
+            .signWith(secretKey, SignatureAlgorithm.HS256)
+            .compact();
+    }
+
+    public String getUsername(String token) {
+        return Jwts.parserBuilder()
+            .setSigningKey(secretKey)
+            .build()
+            .parseClaimsJws(token)
+            .getBody()
+            .get("nickname", String.class);
+    }
+
+    public String getRole(String token) {
+        return Jwts.parserBuilder()
+            .setSigningKey(secretKey)
+            .build()
+            .parseClaimsJws(token)
+            .getBody()
+            .get("role", String.class);
+    }
+
+    public boolean isExpired(String token) {
+        Date expiration = Jwts.parserBuilder()
+            .setSigningKey(secretKey)
+            .build()
+            .parseClaimsJws(token)
+            .getBody()
+            .getExpiration();
+        return expiration.before(new Date());
     }
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token);
             return true;
-        } catch (JwtException | IllegalArgumentException e) {
-            return false;
+        } catch (SecurityException | MalformedJwtException e) {
+            System.out.println("JWT 서명 오류");
+        } catch (ExpiredJwtException e) {
+            System.out.println("JWT 만료됨");
+        } catch (UnsupportedJwtException e) {
+            System.out.println("지원하지 않는 JWT");
+        } catch (IllegalArgumentException e) {
+            System.out.println("JWT claims 문자열이 비어 있음");
         }
-    }
-
-    public Claims getUserInfoFromToken(String token) {
-        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+        return false;
     }
 }
