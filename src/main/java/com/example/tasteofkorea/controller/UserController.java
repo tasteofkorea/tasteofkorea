@@ -53,7 +53,7 @@ public class UserController {
 
     // ✅ 3. 회원 소개 수정
     @Operation(summary = "회원 소개 수정")
-    @PostMapping("/user-info")
+    @PatchMapping("/user-info")
     public ResponseEntity<UserInfoResponseDto> updateUserInfo(
         @RequestBody UpdateInfoRequestDto requestDto,
         @RequestHeader("Authorization") String bearerToken

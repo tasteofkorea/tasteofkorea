@@ -64,26 +64,19 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-                        .requestMatchers(
-                                "/",
-                                "/api/user/login",
-                                "/api/user/signup",
-                                "/api/food/**",
-                                "/api/newsfeeds/**",
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**",
+                    .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
 
-                                // ✅ 여기에 추가
-                                "/restaurants",                      // GET 전체 조회
-                                "/restaurants/by-recipe"             // GET by-recipe 조회
-                        ).permitAll()
-                        .requestMatchers("/api/user/logout").authenticated() // 또는 아예 이 줄을 제거해도 됨
+                    // ✅ 인증 필요한 요청
+                    .requestMatchers(
+                        "/api/user/user-info",
+                        "/api/user/withdrawal",
+                        "/api/user/logout",
+                        "/api/user/reissue"
+                    ).authenticated()
 
-                        .anyRequest().authenticated()
+                    // ✅ 나머지는 전부 허용
+                    .anyRequest().permitAll()
                 )
-
-                // ✅ AuthorizationFilter는 AuthenticationFilter보다 먼저 실행되어야 한다!
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authenticationProvider(authenticationProvider());
 
