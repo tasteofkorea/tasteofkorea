@@ -1,6 +1,7 @@
 package com.example.tasteofkorea.config.SecurityConfig;
 
 import com.example.tasteofkorea.jwt.JwtAuthenticationFilter;
+import com.example.tasteofkorea.jwt.JwtAuthorizationFilter;
 import com.example.tasteofkorea.jwt.JwtUtil;
 import com.example.tasteofkorea.repository.UserRepository;
 import com.example.tasteofkorea.security.UserDetailsServiceImpl;
@@ -61,26 +62,35 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .cors(cors -> cors.configure(http))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                    .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+                        .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
 
-                    // ✅ 인증 필요한 요청
-                    .requestMatchers(
-                        "/api/user/user-info",
-                        "/api/user/withdrawal",
-                        "/api/user/logout",
-                        "/api/user/reissue"
-                    ).authenticated()
+                        // 인증 필요한 요청
+                        .requestMatchers(
+                                "/api/user/user-info",
+                                "/api/user/withdrawal",
+                                "/api/user/logout",
+                                "/api/user/reissue"
+                        ).authenticated()
 
-                    // ✅ 나머지는 전부 허용
-                    .anyRequest().permitAll()
+                        // 나머지는 모두 허용
+                        .anyRequest().permitAll()
                 )
+                // 🔽 순서 중요: 인증 필터 등록
+                .addFilterBefore(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authenticationProvider(authenticationProvider());
 
         return http.build();
     }
+
+    @Bean
+    public JwtAuthorizationFilter jwtAuthorizationFilter() {
+        return new JwtAuthorizationFilter(jwtUtil, userRepository);
+    }
+
 }
 
