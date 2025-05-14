@@ -80,8 +80,8 @@ public class SecurityConfig {
                         .anyRequest().permitAll()
                 )
                 // 🔽 순서 중요: 인증 필터 등록
-                .addFilterBefore(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class) // 먼저 인증
+                .addFilterBefore(jwtAuthorizationFilter(), JwtAuthenticationFilter.class)
                 .authenticationProvider(authenticationProvider());
 
         return http.build();
