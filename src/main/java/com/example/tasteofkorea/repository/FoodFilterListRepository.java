@@ -10,7 +10,7 @@ import java.util.List;
 
 @Repository
 public interface FoodFilterListRepository extends JpaRepository<FoodFilterListEntity, Long> {
-
+    List<FoodFilterListEntity> findByFoodId(Long foodId);
 
 
 }
