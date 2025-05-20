@@ -1,5 +1,6 @@
 package com.example.tasteofkorea.service;
 
+import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +15,7 @@ import java.util.UUID;
 @Service
 public class S3Service {
 
-	private final AmazonS3Client amazonS3Client;
+	private final AmazonS3 amazonS3;
 
 	@Value("${cloud.aws.s3.bucketName}")
 	private String bucket;
@@ -26,8 +27,8 @@ public class S3Service {
 		metadata.setContentType("image/jpeg");
 		metadata.setContentLength(multipartFile.getSize());
 
-		amazonS3Client.putObject(bucket, fileName, multipartFile.getInputStream(), metadata);
+		amazonS3.putObject(bucket, fileName, multipartFile.getInputStream(), metadata);
 
-		return amazonS3Client.getUrl(bucket, fileName).toString();  // S3 URL 반환
+		return amazonS3.getUrl(bucket, fileName).toString();  // S3 URL 반환
 	}
 }
