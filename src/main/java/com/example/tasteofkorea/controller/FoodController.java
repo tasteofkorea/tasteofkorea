@@ -1,7 +1,10 @@
 package com.example.tasteofkorea.controller;
 
+import com.example.tasteofkorea.dto.FilterCriteria;
 import com.example.tasteofkorea.dto.FilterRecipeList;
+import com.example.tasteofkorea.dto.FilteredAllergyInfo;
 import com.example.tasteofkorea.dto.RecipeDTO;
+import com.example.tasteofkorea.entity.FilterEntity;
 import com.example.tasteofkorea.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -59,6 +62,15 @@ public class FoodController {
     public FilterRecipeList getSafeFoods(@RequestParam("filter")  List<Integer> filterIndex,@RequestParam(value = "page",defaultValue = "1") int page,@RequestParam("size")int size) {
         return foodFilterService.getSafeFoods(filterIndex, PageRequest.of(page-1,size));
     }
+
+    @Operation(summary = "음식의 알레르기 성분 조회", description = "특정 음식 ID로 알레르기 성분 목록 조회")
+    @GetMapping("/{id}/filter")
+    public FilteredAllergyInfo getFoodFilter(@PathVariable("id") Long id) {
+        FilterCriteria criteria = foodFilterService.getFilterCriteriaByFoodId(id);
+        return foodFilterService.getFilteredAllergyInfo(id, criteria);
+    }
+
+
 
 
 }
