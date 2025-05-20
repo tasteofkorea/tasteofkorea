@@ -32,7 +32,7 @@ dependencies {
 
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.security:spring-security-config")
-
+	implementation("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
 
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
 	//implementation("org.apache.httpcomponents.client5:httpclient5:5.2")

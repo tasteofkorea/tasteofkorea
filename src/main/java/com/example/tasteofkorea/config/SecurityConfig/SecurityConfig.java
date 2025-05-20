@@ -66,7 +66,6 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                     .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
 
-                    // ✅ 인증 필요한 요청
                     .requestMatchers(
                         "/api/user/user-info",
                         "/api/user/withdrawal",
@@ -74,7 +73,6 @@ public class SecurityConfig {
                         "/api/user/reissue"
                     ).authenticated()
 
-                    // ✅ 나머지는 전부 허용
                     .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
