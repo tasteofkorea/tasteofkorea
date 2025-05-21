@@ -90,4 +90,15 @@ public class JwtUtil {
         }
         return false;
     }
+
+    public String getUsernameFromToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("nickname", String.class);  // ✅ 변경!
+    }
+
+
 }

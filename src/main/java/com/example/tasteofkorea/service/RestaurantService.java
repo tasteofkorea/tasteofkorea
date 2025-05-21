@@ -22,31 +22,44 @@ public class RestaurantService {
     private final RestaurantRepository restaurantRepository;
     private final RecipeRepository recipeRepository;
     private final UserRepository userRepository; // ✅ 추가
+    private final S3Service s3Service;
 
     // Update
-    public RestaurantDTO updateRestaurant(RestaurantDTO metadataJson,String username) throws IOException {
+    public RestaurantDTO updateRestaurant(RestaurantDTO metadataJson, String username) throws IOException {
         RestaurantEntity restaurant = restaurantRepository.findById(metadataJson.getId())
                 .orElseThrow(() -> new RuntimeException("식당을 찾을 수 없습니다."));
 
+        // 권한 체크
         if (!restaurant.getOwner().getUsername().equals(username)) {
             throw new RuntimeException("수정 권한이 없습니다.");
         }
 
+        // 기존 데이터 업데이트
         restaurant.setEnglishName(metadataJson.getEnglishName());
         restaurant.setLatitude(metadataJson.getLatitude());
         restaurant.setLongitude(metadataJson.getLongitude());
         restaurant.setPrice(metadataJson.getPrice());
 
+
+        // 레시피 업데이트
         if (metadataJson.getRecipeId() != null) {
-            RecipeEntity recipe = recipeRepository.findById(metadataJson.getRecipeId() )
+            RecipeEntity recipe = recipeRepository.findById(metadataJson.getRecipeId())
                     .orElseThrow(() -> new RuntimeException("레시피를 찾을 수 없습니다."));
             restaurant.setRecipe(recipe);
         }
 
+        // 새 이미지가 있을 경우 업로드 후 DB에 저장
+        if (metadataJson.getNewFile() != null && !metadataJson.getNewFile().isEmpty()) {
+            String newImageUrl = s3Service.upload(metadataJson.getNewFile());  // 새 이미지 업로드
+            restaurant.setFile(newImageUrl);  // DB에 새로운 이미지 URL 저장
+        }
+
+        // DB 저장
         restaurant = restaurantRepository.save(restaurant);
 
-        return RestaurantDTO.toDTO(restaurant);
+        return RestaurantDTO.toDTO(restaurant);  // DTO로 반환
     }
+
 
     public List<RestaurantDTO> getAllRestaurants() {
         return restaurantRepository.findAll().stream()
@@ -82,4 +95,21 @@ public class RestaurantService {
             restaurantRepository.save(new RestaurantEntity(user,recipe,metadataJson));
         }
     }
+
+    // 특정 식당 조회
+    public RestaurantDTO getRestaurantById(Long id) {
+        RestaurantEntity restaurant = restaurantRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("식당을 찾을 수 없습니다."));
+
+        return RestaurantDTO.toDTO(restaurant);
+    }
+
+
+    public RestaurantDTO getRestaurantByIdAndUsername(Long id, String username) {
+        RestaurantEntity entity = restaurantRepository.findByIdAndUserName(id, username)
+                .orElseThrow(() -> new RuntimeException("식당을 찾을 수 없거나 접근 권한이 없습니다."));
+        return RestaurantDTO.toDTO(entity);
+    }
+
+
 }

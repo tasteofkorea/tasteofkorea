@@ -18,10 +18,12 @@ public interface RestaurantRepository extends JpaRepository<RestaurantEntity, Lo
 
     List<RestaurantEntity> findAllByRecipeId(Long recipeId);
 
-    @Query("select r FROM RestaurantEntity r where r.id  = :id and r.owner.username =:username")
-    Optional<RestaurantEntity> findByIdAndUserName(@Param("id") Long id,@Param("userName") String username);
+    @Query("select r FROM RestaurantEntity r where r.id = :id and r.owner.username = :username")
+    Optional<RestaurantEntity> findByIdAndUserName(@Param("id") Long id, @Param("username") String username);
 
-    @Query("select r FROM RestaurantEntity r where r.owner.username =:username")
-    List<RestaurantEntity> findAllByUserName(@Param("userName") String userName);
+
+    @Query("select r FROM RestaurantEntity r where r.owner.username = :username")
+    List<RestaurantEntity> findAllByUserName(@Param("username") String username);
+
 }
 //
