@@ -1,6 +1,7 @@
 package com.example.tasteofkorea.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -10,6 +11,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.web.client.HttpClientErrorException;
+
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,7 +24,9 @@ public class FastApiService {
     private RestTemplate restTemplate;
 
     // FastAPI 서버 URL
-    private static final String FASTAPI_URL = "http://localhost:8000/predict/";
+
+    @Value("${fastapi.url}")
+    private String FASTAPI_URL;
 
     public Map<String, Object> predict(MultipartFile file) throws IOException {
         // Multipart 파일을 전송하기 위한 준비
