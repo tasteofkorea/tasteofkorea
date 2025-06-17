@@ -82,7 +82,7 @@ jobs:
         run: |
           ssh -t -i /tmp/ssh_key -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=3 -o ConnectTimeout=10 ubuntu@${{ secrets.LIVE_SERVER_IP }} "
             if [ '${{ steps.determine-target.outputs.new_target }}' = 'blue' ]; then
-              sed -i 's/server green:8081/server blue:8080/' /home/ubuntu/nginx/nginx.conf
+              sed -i 's/server green:8080/server blue:8080/' /home/ubuntu/nginx/nginx.conf
             else
               sed -i 's/server blue:8080/server green:8080/' /home/ubuntu/nginx/nginx.conf
             fi
