@@ -48,7 +48,7 @@ jobs:
             if [ '${{ steps.determine-target.outputs.new_target }}' = 'blue' ]; then
               health_url='http://${{ secrets.Domain }}:8080/hc'
             else
-              health_url='http://${{ secrets.Domain }}:8081/hc'
+              health_url='http://${{ secrets.Domain }}:8080/hc'
             fi
             for i in {1..10}; do
               http_status=\$(curl -s -o /dev/null -w '%{http_code}' \$health_url)
