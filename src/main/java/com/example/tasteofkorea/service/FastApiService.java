@@ -20,9 +20,9 @@ public class FastApiService {
 
     @Autowired
     private RestTemplate restTemplate;
-
-    // FastAPI 서버 URL
-    private static final String FASTAPI_URL = "http://localhost:8000/predict/";
+    
+    @Value("${fastapi.url}")
+    private String FASTAPI_URL;
 
     public Map<String, Object> predict(MultipartFile file) throws IOException {
         // Multipart 파일을 전송하기 위한 준비
