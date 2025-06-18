@@ -20,7 +20,8 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 .allowedOrigins(
                         "http://localhost:5173",
-                        "https://taste-of-korea-fe.vercel.app"
+                        "https://taste-of-korea-fe.vercel.app",
+                        "https://tasteofkorea.site"
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                 .allowedHeaders("*")
