@@ -12,6 +12,7 @@ import lombok.Setter;
 public class RecipeEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "k_name", length = 255)
@@ -38,14 +39,14 @@ public class RecipeEntity {
     @Column(name = "eating_source", length = 255)
     private String eatingSource;
 
-    @Column(name = "img_link", length = 255)
+    @Column(name = "img_link", length = 500)
     private String imageLink;
 
-    @Column(name = "image_source", length = 255)
+    @Column(name = "image_source", length = 500)
     private String imageSource;
 
-    @Column(name = "views")
-    private int views;
+    @Column(name = "view")
+    private Long views;
 
     public RecipeDTO toDto() {
         return RecipeDTO.builder()
