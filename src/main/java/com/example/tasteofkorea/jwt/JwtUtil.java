@@ -17,8 +17,8 @@ public class JwtUtil {
 
     public JwtUtil(@Value("${jwt.secret.key}") String secret) {
         this.secretKey = new SecretKeySpec(
-            secret.getBytes(StandardCharsets.UTF_8),
-            SignatureAlgorithm.HS256.getJcaName()
+                secret.getBytes(StandardCharsets.UTF_8),
+                SignatureAlgorithm.HS256.getJcaName()
         );
     }
 
@@ -37,47 +37,47 @@ public class JwtUtil {
     }
     public String createJwt(String nickname, String role, Long expiredMs) {
         return Jwts.builder()
-            .claim("nickname", nickname)
-            .claim("role", role)
-            .setExpiration(new Date(System.currentTimeMillis() + expiredMs))
-            .signWith(secretKey, SignatureAlgorithm.HS256)
-            .compact();
+                .claim("nickname", nickname)
+                .claim("role", role)
+                .setExpiration(new Date(System.currentTimeMillis() + expiredMs))
+                .signWith(secretKey, SignatureAlgorithm.HS256)
+                .compact();
     }
 
     public String getUsername(String token) {
         return Jwts.parserBuilder()
-            .setSigningKey(secretKey)
-            .build()
-            .parseClaimsJws(token)
-            .getBody()
-            .get("nickname", String.class);
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("nickname", String.class);
     }
 
     public String getRole(String token) {
         return Jwts.parserBuilder()
-            .setSigningKey(secretKey)
-            .build()
-            .parseClaimsJws(token)
-            .getBody()
-            .get("role", String.class);
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("role", String.class);
     }
 
     public boolean isExpired(String token) {
         Date expiration = Jwts.parserBuilder()
-            .setSigningKey(secretKey)
-            .build()
-            .parseClaimsJws(token)
-            .getBody()
-            .getExpiration();
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getExpiration();
         return expiration.before(new Date());
     }
 
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()
-                .setSigningKey(secretKey)
-                .build()
-                .parseClaimsJws(token);
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token);
             return true;
         } catch (SecurityException | MalformedJwtException e) {
             System.out.println("JWT 서명 오류");
@@ -90,4 +90,15 @@ public class JwtUtil {
         }
         return false;
     }
+
+    public String getUsernameFromToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("nickname", String.class);  // ✅ 변경!
+    }
+
+
 }

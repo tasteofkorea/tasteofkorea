@@ -40,5 +40,7 @@ public class RestaurantEntity {
         this.englishName = restaurantDTO.getEnglishName();
         this.latitude = restaurantDTO.getLatitude();
         this.longitude = restaurantDTO.getLongitude();
+        this.file = restaurantDTO.getFile();  // ✅ 이미지 URL 저장
     }
+
 }
