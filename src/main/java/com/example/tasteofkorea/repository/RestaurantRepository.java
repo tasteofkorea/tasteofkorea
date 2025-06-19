@@ -16,7 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 public interface RestaurantRepository extends JpaRepository<RestaurantEntity, Long> {
 
-    List<RestaurantEntity> findAllByRecipeId(Long recipeId);
+    @Query("SELECT r FROM RestaurantEntity r WHERE r.recipe.id = :recipeId")
+    List<RestaurantEntity> findAllByRecipeId(@Param("recipeId") Long recipeId);
 
     @Query("select r FROM RestaurantEntity r where r.id = :id and r.owner.username = :username")
     Optional<RestaurantEntity> findByIdAndUserName(@Param("id") Long id, @Param("username") String username);
