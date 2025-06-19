@@ -12,7 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -81,10 +83,13 @@ public class RestaurantService {
     }
 
     public List<RestaurantDTO> getRestaurantsByRecipeId(Long recipeId) {
-        return restaurantRepository.findAllByRecipeId(recipeId).stream()
+        return Optional.ofNullable(restaurantRepository.findAllByRecipeId(recipeId))
+                .orElse(Collections.emptyList())  // null이면 빈 리스트로 대체
+                .stream()
                 .map(RestaurantDTO::toDTO)
                 .collect(Collectors.toList());
     }
+
 
     public void createRestaurant(RestaurantDTO metadataJson, String username) {
         // 레시피 설정
