@@ -21,6 +21,4 @@ public class RecipeDTO {
     private String eatingSource;
     private String imageLink;
     private String imageSource;
-
-
 }

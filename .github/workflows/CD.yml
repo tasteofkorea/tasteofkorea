@@ -3,8 +3,7 @@ name: CD
 on:
   workflow_run:
     workflows: ["CI"]
-    types:
-      - completed
+    types: [completed]
 
 jobs:
   deploy:
@@ -20,7 +19,6 @@ jobs:
         run: |
           current=$(ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.LIVE_SERVER_IP }} \
             "cat /home/ubuntu/backend_target.txt || echo green")
-
           if [ "$current" = "blue" ]; then
             new_target="green"
             new_port=8081
@@ -28,7 +26,6 @@ jobs:
             new_target="blue"
             new_port=8080
           fi
-
           echo "backend_target=$current" >> $GITHUB_OUTPUT
           echo "new_target=$new_target" >> $GITHUB_OUTPUT
           echo "new_port=$new_port" >> $GITHUB_OUTPUT
@@ -37,11 +34,6 @@ jobs:
         run: |
           ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.LIVE_SERVER_IP }} \
             "echo '${{ secrets.DOCKERHUB_PW }}' | docker login -u '${{ secrets.DOCKERHUB_USERNAME }}' --password-stdin"
-
-      - name: Stop current environment
-        run: |
-          ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.LIVE_SERVER_IP }} \
-            "docker-compose -f /home/ubuntu/korea-food/docker-compose.yml stop ${{ steps.determine-target.outputs.backend_target }}"
 
       - name: Deploy new environment
         run: |
@@ -67,23 +59,26 @@ jobs:
             exit 1
           "
 
+      - name: Update nginx and reload
+        if: success()
+        run: |
+          ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.LIVE_SERVER_IP }} "
+            sed -i 's/\(proxy_pass http:\/\/\).*/\1${{ steps.determine-target.outputs.new_target }}:8080;/' /home/ubuntu/nginx/nginx.conf
+            docker-compose -f /home/ubuntu/korea-food/docker-compose.yml exec nginx nginx -s reload
+          "
+
       - name: Update backend_target.txt
         if: success()
         run: |
           ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.LIVE_SERVER_IP }} \
             "echo '${{ steps.determine-target.outputs.new_target }}' > /home/ubuntu/backend_target.txt"
 
-      - name: Update nginx and reload
+      - name: Remove old environment
         if: success()
         run: |
-          ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.LIVE_SERVER_IP }} "
-            if [ '${{ steps.determine-target.outputs.new_target }}' = 'blue' ]; then
-              sed -i 's/8081/8080/g' /home/ubuntu/nginx/nginx.conf
-            else
-              sed -i 's/8080/8081/g' /home/ubuntu/nginx/nginx.conf
-            fi
-            docker-compose -f /home/ubuntu/korea-food/docker-compose.yml exec nginx nginx -s reload
-          "
+          ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.LIVE_SERVER_IP }} \
+            "docker-compose -f /home/ubuntu/korea-food/docker-compose.yml stop ${{ steps.determine-target.outputs.backend_target }} &&
+             docker-compose -f /home/ubuntu/korea-food/docker-compose.yml rm -f ${{ steps.determine-target.outputs.backend_target }}"
 
       - name: Rollback on failure or cancellation
         if: failure() || cancelled()
