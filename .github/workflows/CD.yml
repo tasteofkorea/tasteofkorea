@@ -21,14 +21,11 @@ jobs:
             "cat /home/ubuntu/backend_target.txt || echo green")
           if [ "$current" = "blue" ]; then
             new_target="green"
-            new_port=8081
           else
             new_target="blue"
-            new_port=8080
           fi
           echo "backend_target=$current" >> $GITHUB_OUTPUT
           echo "new_target=$new_target" >> $GITHUB_OUTPUT
-          echo "new_port=$new_port" >> $GITHUB_OUTPUT
 
       - name: Docker login
         run: |
@@ -38,7 +35,7 @@ jobs:
       - name: Deploy new environment
         run: |
           ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.LIVE_SERVER_IP }} "
-            docker pull kfood/kfood:latest
+            docker pull kfood/kfood:latest &&
             docker-compose -f /home/ubuntu/korea-food/docker-compose.yml up -d --no-deps ${{ steps.determine-target.outputs.new_target }}
           "
 
@@ -47,7 +44,7 @@ jobs:
         run: |
           ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.LIVE_SERVER_IP }} "
             for i in {1..10}; do
-              code=\$(curl -s -o /dev/null -w '%{http_code}' http://${{ secrets.Domain }}:${{ steps.determine-target.outputs.new_port }}/hc)
+              code=\$(curl -s -o /dev/null -w '%{http_code}' http://${{ steps.determine-target.outputs.new_target }}:8080/hc)
               if [ \"\$code\" = \"200\" ]; then
                 echo 'Health check passed'
                 exit 0
@@ -63,7 +60,7 @@ jobs:
         if: success()
         run: |
           ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.LIVE_SERVER_IP }} "
-            sed -i 's/\(proxy_pass http:\/\/\).*/\1${{ steps.determine-target.outputs.new_target }}:8080;/' /home/ubuntu/nginx/nginx.conf
+            sed -i 's/\(proxy_pass http:\/\/\)\(blue\|green\):8080;/\1${{ steps.determine-target.outputs.new_target }}:8080;/' /home/ubuntu/nginx/nginx.conf &&
             docker-compose -f /home/ubuntu/korea-food/docker-compose.yml exec nginx nginx -s reload
           "
 
@@ -83,9 +80,8 @@ jobs:
       - name: Rollback on failure or cancellation
         if: failure() || cancelled()
         run: |
-          old_target=${{ steps.determine-target.outputs.backend_target }}
           ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.LIVE_SERVER_IP }} "
-            echo '[Rollback] Restarting previous environment: $old_target'
-            docker-compose -f /home/ubuntu/korea-food/docker-compose.yml up -d --no-deps $old_target
-            echo '$old_target' > /home/ubuntu/backend_target.txt
+            echo '[Rollback] Restarting previous environment: ${{ steps.determine-target.outputs.backend_target }}'
+            docker-compose -f /home/ubuntu/korea-food/docker-compose.yml up -d --no-deps ${{ steps.determine-target.outputs.backend_target }}
+            echo '${{ steps.determine-target.outputs.backend_target }}' > /home/ubuntu/backend_target.txt
           "
