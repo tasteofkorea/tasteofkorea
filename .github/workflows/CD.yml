@@ -63,7 +63,7 @@ jobs:
         if: success()
         run: |
           ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.LIVE_SERVER_IP }} "
-            sed -i 's/\(proxy_pass http:\/\/\)\(blue\|green\):8080;/\1${{ steps.determine-target.outputs.new_target }}:8080;/' /home/ubuntu/nginx/nginx.conf &&
+            sed -i 's/\(server \)\(blue\|green\):8080;/\1${{ steps.determine-target.outputs.new_target }}:8080;/' /home/ubuntu/nginx/conf.d/default.conf &&
             docker-compose -f /home/ubuntu/korea-food/docker-compose.yml exec nginx nginx -s reload
           "
 
