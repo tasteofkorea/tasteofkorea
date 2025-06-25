@@ -196,7 +196,7 @@ public class RestaurantController {
 	) {
 		try {
 			RestTemplate restTemplate = new RestTemplate();
-			String kioskUrl = "http://localhost:3000/api/order";
+			String kioskUrl = "https://tastekiosk.site/api/order";
 
 			// ✅ restaurantService가 Optional 반환 안 하는 경우
 			RestaurantEntity restaurant = restaurantService.findByEnglishNameAndRecipeId(restaurantName, recipeId);
